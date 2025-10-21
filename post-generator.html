@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Media Post Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Pacifico&family=Poppins:wght@300;400;500;600;700&family=Dancing+Script:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            gap: 30px;
+            align-items: flex-start;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 1400px;
+            width: 100%;
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .controls {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 400px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .controls h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            color: #333;
+            font-weight: 700;
+        }
+
+        .controls p {
+            color: #666;
+            margin-bottom: 25px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .form-group input[type="text"],
+        .form-group textarea,
+        .form-group input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            transition: border 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .theme-selector {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .theme-btn {
+            padding: 12px;
+            border: 3px solid #e0e0e0;
+            border-radius: 12px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            font-size: 12px;
+            color: #333;
+        }
+
+        .theme-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .theme-btn.active {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+
+        .theme-btn.love-theme {
+            border-color: #ff6b9d;
+        }
+
+        .theme-btn.love-theme.active {
+            background: #ff6b9d;
+        }
+
+        .export-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin-top: 10px;
+        }
+
+        .export-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .export-btn:active {
+            transform: translateY(0);
+        }
+
+        .preview-container {
+            flex: 1;
+            min-width: 600px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .post-preview {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .post-canvas {
+            width: 600px;
+            height: 600px;
+            position: relative;
+            overflow: hidden;
+            border-radius: 16px;
+        }
+
+        /* Common elements for all themes */
+        .brand-logo {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            object-fit: cover;
+            z-index: 100;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .profile-section {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .profile-img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 4px solid rgba(255, 255, 255, 0.5);
+            object-fit: cover;
+            flex-shrink: 0;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .post-email {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            opacity: 0.8;
+            z-index: 100;
+        }
+
+        /* Theme 1: Gradient Bliss */
+        .theme-gradient-bliss {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 60px;
+        }
+
+        .theme-gradient-bliss .profile-section {
+            margin-bottom: 40px;
+        }
+
+        .theme-gradient-bliss .profile-img {
+            border-color: white;
+        }
+
+        .theme-gradient-bliss .profile-name {
+            color: white;
+            font-size: 28px;
+            font-weight: 700;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .theme-gradient-bliss .post-header {
+            font-size: 48px;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 20px;
+            line-height: 1.2;
+            text-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .theme-gradient-bliss .post-description {
+            font-size: 22px;
+            color: rgba(255,255,255,0.95);
+            line-height: 1.6;
+            font-weight: 400;
+        }
+
+        .theme-gradient-bliss .post-email {
+            color: rgba(255,255,255,0.9);
+        }
+
+        /* Theme 2: Pastel Dream */
+        .theme-pastel-dream {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px;
+            text-align: center;
+        }
+
+        .theme-pastel-dream .profile-section {
+            flex-direction: column;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .theme-pastel-dream .profile-img {
+            width: 100px;
+            height: 100px;
+            border: 5px solid #ff6b6b;
+        }
+
+        .theme-pastel-dream .profile-name {
+            font-size: 26px;
+            font-weight: 700;
+            color: #d35400;
+        }
+
+        .theme-pastel-dream .post-header {
+            font-size: 50px;
+            font-weight: 800;
+            color: #ff6b6b;
+            margin-bottom: 20px;
+            line-height: 1.2;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .theme-pastel-dream .post-description {
+            font-size: 22px;
+            color: #333;
+            line-height: 1.6;
+            font-weight: 500;
+            max-width: 500px;
+        }
+
+        .theme-pastel-dream .post-email {
+            color: #d35400;
+        }
+
+        /* Theme 3: Dark Elegance */
+        .theme-dark-elegance {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 60px;
+            position: relative;
+        }
+
+        .theme-dark-elegance::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, #ff6b6b, #ffd93d, #6bcf7f, #4d9de0);
+        }
+
+        .theme-dark-elegance .profile-section {
+            margin-bottom: 40px;
+        }
+
+        .theme-dark-elegance .profile-img {
+            border-color: #ffd93d;
+        }
+
+        .theme-dark-elegance .profile-name {
+            color: #ffd93d;
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .theme-dark-elegance .post-header {
+            font-size: 48px;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 20px;
+            line-height: 1.2;
+        }
+
+        .theme-dark-elegance .post-description {
+            font-size: 22px;
+            color: rgba(255,255,255,0.85);
+            line-height: 1.6;
+            font-weight: 400;
+        }
+
+        .theme-dark-elegance .post-email {
+            color: #ffd93d;
+        }
+
+        /* Theme 4: Cute Minimal */
+        .theme-cute-minimal {
+            background: #fff5f7;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px;
+            text-align: center;
+            position: relative;
+        }
+
+        .theme-cute-minimal::before {
+            content: '💖';
+            position: absolute;
+            top: 30px;
+            left: 100px;
+            font-size: 40px;
+            opacity: 0.3;
+        }
+
+        .theme-cute-minimal::after {
+            content: '✨';
+            position: absolute;
+            bottom: 80px;
+            left: 30px;
+            font-size: 40px;
+            opacity: 0.3;
+        }
+
+        .theme-cute-minimal .profile-section {
+            flex-direction: column;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .theme-cute-minimal .profile-img {
+            width: 100px;
+            height: 100px;
+            border: 5px solid #ff6b9d;
+        }
+
+        .theme-cute-minimal .profile-name {
+            font-size: 26px;
+            font-weight: 700;
+            color: #ff6b9d;
+        }
+
+        .theme-cute-minimal .post-header {
+            font-size: 48px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ff6b9d 0%, #c06c84 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+            line-height: 1.2;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .theme-cute-minimal .post-description {
+            font-size: 22px;
+            color: #555;
+            line-height: 1.6;
+            font-weight: 500;
+            max-width: 480px;
+        }
+
+        .theme-cute-minimal .post-email {
+            color: #ff6b9d;
+        }
+
+        /* Theme 5: Neon Vibes */
+        .theme-neon-vibes {
+            background: #0a0e27;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 60px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .theme-neon-vibes::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,0,255,0.1) 0%, transparent 70%);
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .theme-neon-vibes .profile-section {
+            margin-bottom: 40px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .theme-neon-vibes .profile-img {
+            border-color: #0ff;
+            box-shadow: 0 0 30px rgba(0,255,255,0.6);
+        }
+
+        .theme-neon-vibes .profile-name {
+            color: #0ff;
+            font-size: 28px;
+            font-weight: 700;
+            text-shadow: 0 0 20px rgba(0,255,255,0.8);
+        }
+
+        .theme-neon-vibes .post-header {
+            font-size: 48px;
+            font-weight: 800;
+            color: #f0f;
+            margin-bottom: 20px;
+            line-height: 1.2;
+            text-shadow: 0 0 30px rgba(255,0,255,0.8);
+            position: relative;
+            z-index: 1;
+        }
+
+        .theme-neon-vibes .post-description {
+            font-size: 22px;
+            color: #fff;
+            line-height: 1.6;
+            font-weight: 400;
+            position: relative;
+            z-index: 1;
+        }
+
+        .theme-neon-vibes .post-email {
+            color: #0ff;
+            text-shadow: 0 0 10px rgba(0,255,255,0.6);
+        }
+
+        /* Theme 6: Sunshine */
+        .theme-sunshine {
+            background: linear-gradient(135deg, #ffd89b 0%, #19547b 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px;
+            text-align: center;
+            position: relative;
+        }
+
+        .theme-sunshine::before {
+            content: '☀️';
+            position: absolute;
+            top: 40px;
+            left: 100px;
+            font-size: 60px;
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .theme-sunshine .profile-section {
+            flex-direction: column;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .theme-sunshine .profile-img {
+            width: 100px;
+            height: 100px;
+            border: 5px solid white;
+        }
+
+        .theme-sunshine .profile-name {
+            font-size: 26px;
+            font-weight: 700;
+            color: white;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .theme-sunshine .post-header {
+            font-size: 50px;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 20px;
+            line-height: 1.2;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .theme-sunshine .post-description {
+            font-size: 22px;
+            color: white;
+            line-height: 1.6;
+            font-weight: 500;
+            max-width: 500px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .theme-sunshine .post-email {
+            color: white;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        /* Theme 7: Romantic Hearts (LOVE THEME 1) */
+        .theme-romantic-hearts {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #ffdde1 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .theme-romantic-hearts::before {
+            content: '💕';
+            position: absolute;
+            top: 50px;
+            left: 50px;
+            font-size: 80px;
+            opacity: 0.2;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .theme-romantic-hearts::after {
+            content: '💖';
+            position: absolute;
+            bottom: 50px;
+            right: 100px;
+            font-size: 70px;
+            opacity: 0.2;
+            animation: float 5s ease-in-out infinite;
+            animation-delay: 1s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .theme-romantic-hearts .profile-section {
+            flex-direction: column;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .theme-romantic-hearts .profile-img {
+            width: 110px;
+            height: 110px;
+            border: 5px solid #ff6b9d;
+        }
+
+        .theme-romantic-hearts .profile-name {
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ff6b9d 0%, #ff0844 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-family: 'Dancing Script', cursive;
+        }
+
+        .theme-romantic-hearts .post-header {
+            font-size: 52px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ff6b9d 0%, #ff0844 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+            line-height: 1.2;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .theme-romantic-hearts .post-description {
+            font-size: 22px;
+            color: #c2185b;
+            line-height: 1.6;
+            font-weight: 500;
+            max-width: 500px;
+        }
+
+        .theme-romantic-hearts .post-email {
+            color: #ff0844;
+        }
+
+        /* Theme 8: Love Letter (LOVE THEME 2) */
+        .theme-love-letter {
+            background: #ffe4e1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 60px;
+            position: relative;
+            border: 8px solid #ff69b4;
+            box-shadow: inset 0 0 0 4px #fff;
+        }
+
+        .theme-love-letter::before {
+            content: '❤️';
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 50px;
+            animation: heartbeat 1.5s ease-in-out infinite;
+        }
+
+        @keyframes heartbeat {
+            0%, 100% { transform: translateX(-50%) scale(1); }
+            50% { transform: translateX(-50%) scale(1.1); }
+        }
+
+        .theme-love-letter .profile-section {
+            margin-bottom: 40px;
+        }
+
+        .theme-love-letter .profile-img {
+            border-color: #ff69b4;
+            width: 90px;
+            height: 90px;
+        }
+
+        .theme-love-letter .profile-name {
+            font-size: 32px;
+            font-weight: 700;
+            color: #ff1493;
+            font-family: 'Dancing Script', cursive;
+        }
+
+        .theme-love-letter .post-header {
+            font-size: 46px;
+            font-weight: 800;
+            color: #c71585;
+            margin-bottom: 20px;
+            line-height: 1.3;
+            font-family: 'Dancing Script', cursive;
+        }
+
+        .theme-love-letter .post-description {
+            font-size: 20px;
+            color: #8b0045;
+            line-height: 1.7;
+            font-weight: 500;
+            font-style: italic;
+        }
+
+        .theme-love-letter .post-email {
+            color: #ff1493;
+        }
+
+        /* Theme 9: Ocean Breeze */
+        .theme-ocean-breeze {
+            background: linear-gradient(135deg, #667eea 0%, #00d4ff 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 60px;
+            position: relative;
+        }
+
+        .theme-ocean-breeze::before {
+            content: '🌊';
+            position: absolute;
+            bottom: 30px;
+            right: 100px;
+            font-size: 60px;
+            opacity: 0.4;
+        }
+
+        .theme-ocean-breeze .profile-section {
+            margin-bottom: 40px;
+        }
+
+        .theme-ocean-breeze .profile-img {
+            border-color: white;
+        }
+
+        .theme-ocean-breeze .profile-name {
+            font-size: 28px;
+            font-weight: 700;
+            color: #fff;
+            text-shadow: 0 2px 15px rgba(0,0,0,0.2);
+        }
+
+        .theme-ocean-breeze .post-header {
+            font-size: 50px;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 20px;
+            line-height: 1.2;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+
+        .theme-ocean-breeze .post-description {
+            font-size: 22px;
+            color: rgba(255,255,255,0.95);
+            line-height: 1.6;
+            font-weight: 400;
+        }
+
+        .theme-ocean-breeze .post-email {
+            color: rgba(255,255,255,0.9);
+        }
+
+        /* Theme 10: Forest Green */
+        .theme-forest-green {
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px;
+            text-align: center;
+            position: relative;
+        }
+
+        .theme-forest-green::before {
+            content: '🌿';
+            position: absolute;
+            top: 40px;
+            left: 80px;
+            font-size: 50px;
+            opacity: 0.3;
+        }
+
+        .theme-forest-green::after {
+            content: '🍃';
+            position: absolute;
+            bottom: 80px;
+            right: 80px;
+            font-size: 45px;
+            opacity: 0.3;
+        }
+
+        .theme-forest-green .profile-section {
+            flex-direction: column;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .theme-forest-green .profile-img {
+            width: 100px;
+            height: 100px;
+            border: 5px solid #a8e6cf;
+        }
+
+        .theme-forest-green .profile-name {
+            font-size: 26px;
+            font-weight: 700;
+            color: #a8e6cf;
+        }
+
+        .theme-forest-green .post-header {
+            font-size: 50px;
+            font-weight: 800;
+            color: #dcedc1;
+            margin-bottom: 20px;
+            line-height: 1.2;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .theme-forest-green .post-description {
+            font-size: 22px;
+            color: #ffd3b6;
+            line-height: 1.6;
+            font-weight: 500;
+            max-width: 500px;
+        }
+
+        .theme-forest-green .post-email {
+            color: #a8e6cf;
+        }
+
+        .reset-img-btn {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 12px;
+            cursor: pointer;
+            margin-top: 8px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .reset-img-btn:hover {
+            background: #ff5252;
+            transform: translateY(-1px);
+        }
+
+        @media (max-width: 1200px) {
+            body {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .controls {
+                width: 100%;
+                max-width: 500px;
+            }
+
+            .preview-container {
+                min-width: auto;
+                width: 100%;
+            }
+
+            .post-canvas {
+                width: 100%;
+                max-width: 600px;
+                height: auto;
+                aspect-ratio: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="controls">
+            <h1>✨ Post Generator</h1>
+            <p>Create beautiful social media posts in seconds</p>
+
+            <div class="form-group">
+                <label>Your Name</label>
+                <input type="text" id="userName" placeholder="Enter your name" value="Zohaib">
+            </div>
+
+            <div class="form-group">
+                <label>Your Email</label>
+                <input type="text" id="userEmail" placeholder="your@email.com" value="zohaib@example.com">
+            </div>
+
+            <div class="form-group">
+                <label>Post Header</label>
+                <input type="text" id="postHeader" placeholder="Main title" value="Life is Beautiful 🌟">
+            </div>
+
+            <div class="form-group">
+                <label>Description</label>
+                <textarea id="postDescription" placeholder="Write your message...">Every moment is a chance to create something amazing. Keep shining! ✨</textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Choose Theme (10 Themes Available)</label>
+                <div class="theme-selector">
+                    <button class="theme-btn active" data-theme="gradient-bliss">Gradient Bliss</button>
+                    <button class="theme-btn" data-theme="pastel-dream">Pastel Dream</button>
+                    <button class="theme-btn" data-theme="dark-elegance">Dark Elegance</button>
+                    <button class="theme-btn" data-theme="cute-minimal">Cute Minimal</button>
+                    <button class="theme-btn" data-theme="neon-vibes">Neon Vibes</button>
+                    <button class="theme-btn" data-theme="sunshine">Sunshine</button>
+                    <button class="theme-btn love-theme" data-theme="romantic-hearts">💕 Romantic Hearts</button>
+                    <button class="theme-btn love-theme" data-theme="love-letter">❤️ Love Letter</button>
+                    <button class="theme-btn" data-theme="ocean-breeze">Ocean Breeze</button>
+                    <button class="theme-btn" data-theme="forest-green">Forest Green</button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Brand Logo (Small - Top Right)</label>
+                <input type="file" id="brandImage" accept="image/*">
+                <button class="reset-img-btn" id="resetBrand">Reset Brand Logo</button>
+            </div>
+
+            <div class="form-group">
+                <label>Profile Picture (With Your Name)</label>
+                <input type="file" id="profileImage" accept="image/*">
+                <button class="reset-img-btn" id="resetProfile">Reset Profile Picture</button>
+            </div>
+
+            <button class="export-btn" id="exportBtn">📥 Download as PNG (High Quality)</button>
+        </div>
+
+        <div class="preview-container">
+            <div class="post-preview">
+                <div class="post-canvas theme-gradient-bliss" id="postCanvas">
+                    <img src="https://lh3.googleusercontent.com/a/ACg8ocI38061VEESi2ViPBkkkklf4pk0Z-6i1zmZtz8dSLeQg9ChT4Hf=s576-c-no" 
+                         alt="Brand Logo" 
+                         class="brand-logo" 
+                         id="brandLogo">
+                    <div class="profile-name" id="profileName">Zohaib</div>
+                    <div class="post-header" id="headerText">Life is Beautiful 🌟</div>
+                    <div class="post-description" id="descriptionText">Every moment is a chance to create something amazing. Keep shining! ✨</div>
+                    <div class="post-email" id="emailText">zohaib@example.com</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const defaultImageUrl = 'https://lh3.googleusercontent.com/a/ACg8ocI38061VEESi2ViPBkkkklf4pk0Z-6i1zmZtz8dSLeQg9ChT4Hf=s576-c-no';
+        let currentTheme = 'gradient-bliss';
+        let brandLogoSrc = defaultImageUrl;
+        let profilePicSrc = defaultImageUrl;
+
+        // Theme configuration - defines layout for each theme
+        const themeConfig = {
+            'gradient-bliss': { layout: 'standard' },
+            'pastel-dream': { layout: 'centered' },
+            'dark-elegance': { layout: 'standard' },
+            'cute-minimal': { layout: 'centered' },
+            'neon-vibes': { layout: 'standard' },
+            'sunshine': { layout: 'centered' },
+            'romantic-hearts': { layout: 'centered' },
+            'love-letter': { layout: 'standard' },
+            'ocean-breeze': { layout: 'standard' },
+            'forest-green': { layout: 'centered' }
+        };
+
+        // Update preview in real-time
+        document.getElementById('userName').addEventListener('input', (e) => {
+            const profileNameEl = document.getElementById('profileName');
+            if (profileNameEl) {
+                profileNameEl.textContent = e.target.value || 'Your Name';
+            }
+        });
+
+        document.getElementById('userEmail').addEventListener('input', (e) => {
+            const emailEl = document.getElementById('emailText');
+            if (emailEl) {
+                emailEl.textContent = e.target.value || 'your@email.com';
+            }
+        });
+
+        document.getElementById('postHeader').addEventListener('input', (e) => {
+            const headerEl = document.getElementById('headerText');
+            if (headerEl) {
+                headerEl.textContent = e.target.value || 'Your Header';
+            }
+        });
+
+        document.getElementById('postDescription').addEventListener('input', (e) => {
+            const descEl = document.getElementById('descriptionText');
+            if (descEl) {
+                descEl.textContent = e.target.value || 'Your description...';
+            }
+        });
+
+        // Theme switcher
+        document.querySelectorAll('.theme-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                const theme = btn.dataset.theme;
+                currentTheme = theme;
+                updateTheme(theme);
+            });
+        });
+
+        function updateTheme(theme) {
+            const canvas = document.getElementById('postCanvas');
+            const config = themeConfig[theme];
+            
+            // Get current values
+            const userName = document.getElementById('userName').value || 'Zohaib';
+            const userEmail = document.getElementById('userEmail').value || 'zohaib@example.com';
+            const postHeader = document.getElementById('postHeader').value || 'Life is Beautiful 🌟';
+            const postDescription = document.getElementById('postDescription').value || 'Every moment is a chance to create something amazing. Keep shining! ✨';
+
+            // Clear canvas
+            canvas.innerHTML = '';
+            
+            // Apply theme class
+            canvas.className = `post-canvas theme-${theme}`;
+            
+            // Add brand logo (always present in top right - small)
+            const brandLogo = document.createElement('img');
+            brandLogo.src = brandLogoSrc;
+            brandLogo.alt = 'Brand Logo';
+            brandLogo.className = 'brand-logo';
+            brandLogo.id = 'brandLogo';
+            canvas.appendChild(brandLogo);
+
+            // Add content based on layout
+            if (config.layout === 'centered') {
+                // Centered layout: profile section, then header and description
+                const profileSection = document.createElement('div');
+                profileSection.className = 'profile-section';
+                
+                const profileImg = document.createElement('img');
+                profileImg.src = profilePicSrc;
+                profileImg.alt = 'Profile';
+                profileImg.className = 'profile-img';
+                profileImg.id = 'profileImg';
+                profileSection.appendChild(profileImg);
+
+                const nameDiv = document.createElement('div');
+                nameDiv.className = 'profile-name';
+                nameDiv.id = 'profileName';
+                nameDiv.textContent = userName;
+                profileSection.appendChild(nameDiv);
+
+                canvas.appendChild(profileSection);
+
+                const headerDiv = document.createElement('div');
+                headerDiv.className = 'post-header';
+                headerDiv.id = 'headerText';
+                headerDiv.textContent = postHeader;
+                canvas.appendChild(headerDiv);
+
+                const descDiv = document.createElement('div');
+                descDiv.className = 'post-description';
+                descDiv.id = 'descriptionText';
+                descDiv.textContent = postDescription;
+                canvas.appendChild(descDiv);
+            } else {
+                // Standard layout: profile section at top (pic + name), then header and description
+                const profileSection = document.createElement('div');
+                profileSection.className = 'profile-section';
+                
+                const profileImg = document.createElement('img');
+                profileImg.src = profilePicSrc;
+                profileImg.alt = 'Profile';
+                profileImg.className = 'profile-img';
+                profileImg.id = 'profileImg';
+                profileSection.appendChild(profileImg);
+
+                const nameDiv = document.createElement('div');
+                nameDiv.className = 'profile-name';
+                nameDiv.id = 'profileName';
+                nameDiv.textContent = userName;
+                profileSection.appendChild(nameDiv);
+
+                canvas.appendChild(profileSection);
+
+                const headerDiv = document.createElement('div');
+                headerDiv.className = 'post-header';
+                headerDiv.id = 'headerText';
+                headerDiv.textContent = postHeader;
+                canvas.appendChild(headerDiv);
+
+                const descDiv = document.createElement('div');
+                descDiv.className = 'post-description';
+                descDiv.id = 'descriptionText';
+                descDiv.textContent = postDescription;
+                canvas.appendChild(descDiv);
+            }
+
+            // Add email at bottom left (always present)
+            const emailDiv = document.createElement('div');
+            emailDiv.className = 'post-email';
+            emailDiv.id = 'emailText';
+            emailDiv.textContent = userEmail;
+            canvas.appendChild(emailDiv);
+        }
+
+        // Brand logo upload
+        document.getElementById('brandImage').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    brandLogoSrc = event.target.result;
+                    const brandLogo = document.getElementById('brandLogo');
+                    if (brandLogo) {
+                        brandLogo.src = brandLogoSrc;
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Profile picture upload
+        document.getElementById('profileImage').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    profilePicSrc = event.target.result;
+                    const profileImg = document.getElementById('profileImg');
+                    if (profileImg) {
+                        profileImg.src = profilePicSrc;
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Reset brand logo
+        document.getElementById('resetBrand').addEventListener('click', () => {
+            brandLogoSrc = defaultImageUrl;
+            const brandLogo = document.getElementById('brandLogo');
+            if (brandLogo) {
+                brandLogo.src = defaultImageUrl;
+            }
+            document.getElementById('brandImage').value = '';
+        });
+
+        // Reset profile picture
+        document.getElementById('resetProfile').addEventListener('click', () => {
+            profilePicSrc = defaultImageUrl;
+            const profileImg = document.getElementById('profileImg');
+            if (profileImg) {
+                profileImg.src = defaultImageUrl;
+            }
+            document.getElementById('profileImage').value = '';
+        });
+
+        // Export as high-quality PNG
+        document.getElementById('exportBtn').addEventListener('click', async () => {
+            const canvas = document.getElementById('postCanvas');
+            const btn = document.getElementById('exportBtn');
+            
+            btn.textContent = '⏳ Generating...';
+            btn.disabled = true;
+
+            try {
+                // Wait for animations to settle
+                await new Promise(resolve => setTimeout(resolve, 300));
+
+                const htmlCanvas = await html2canvas(canvas, {
+                    scale: 3, // High quality - 3x resolution (1800x1800px)
+                    backgroundColor: null,
+                    logging: false,
+                    useCORS: true,
+                    allowTaint: true,
+                    imageTimeout: 0,
+                    width: 600,
+                    height: 600
+                });
+
+                // Convert to blob and download
+                htmlCanvas.toBlob((blob) => {
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    const timestamp = new Date().getTime();
+                    link.download = `social-post-${currentTheme}-${timestamp}.png`;
+                    link.href = url;
+                    link.click();
+                    URL.revokeObjectURL(url);
+
+                    btn.textContent = '✅ Downloaded!';
+                    setTimeout(() => {
+                        btn.textContent = '📥 Download as PNG (High Quality)';
+                        btn.disabled = false;
+                    }, 2000);
+                }, 'image/png', 1.0);
+
+            } catch (error) {
+                console.error('Export error:', error);
+                btn.textContent = '❌ Error - Try Again';
+                setTimeout(() => {
+                    btn.textContent = '📥 Download as PNG (High Quality)';
+                    btn.disabled = false;
+                }, 2000);
+            }
+        });
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            updateTheme(currentTheme);
+        });
+    </script>
+</body>
+</html>
+
